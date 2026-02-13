@@ -1,9 +1,13 @@
-function Navigation() {
+export default function Navigation() {
     return (
-        <nav>
-            Navigation:
+        <nav className="navbar">
             <a href="/">Home</a>
-            <a href="/bsg-people">BSG People</a>
+            <a href="/products">Products</a>
+            <a href="/inventories">Inventories</a>
+            <a href="/product-inventories">Product Inventories</a>
+            <a href="/customers">Customers</a>
+            <a href="/orders">Orders</a>
+            <a href="/order-products">Order Products</a>
         </nav>
-    )
-} export default Navigation;
+    );
+}

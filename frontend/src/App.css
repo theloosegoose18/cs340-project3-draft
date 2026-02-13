@@ -39,3 +39,27 @@
 .read-the-docs {
   color: #888;
 }
+
+/* ===== SITE HEADER ===== */
+
+.site-header {
+    margin-bottom: 20px;
+}
+
+.site-header h1 {
+    font-size: 48px;
+    font-weight: 700;
+    letter-spacing: 3px;
+
+    background: linear-gradient(90deg, #4da6ff, #66b3ff, #3399ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    text-shadow: 0 0 15px rgba(77, 166, 255, 0.4);
+}
+
+.page-shell p {
+    margin-bottom: 18px;   /* space between paragraphs */
+    line-height: 1.6;      /* improves readability */
+    color: rgba(78, 161, 255, 0.85);
+}

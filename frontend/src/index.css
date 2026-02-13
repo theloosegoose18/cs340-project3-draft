@@ -1,14 +1,149 @@
-h1, h2 { margin-left: 16px;}
-table {border-collapse: collapse;margin-left: 32px;}
-th, td {
-    border: 1px solid #ddd;
-    padding: 12px;
-    text-align: center;
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #0f0f0f;
+    color: #4da6ff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-th {background-color: #f2f2f2;}
-tr:nth-child(even) {background-color: #f9f9f9;}
-.cuForm { margin-left: 32px;}
-input, select { margin-bottom: 4px;margin-right: 12px;}
-nav {background-color: #cecece;padding: 16px;}
-a {margin-left: 16px;}
-.homepageDescription {margin-left: 32px;}
+
+#root {
+    display: flex;
+    justify-content: center;
+}
+
+.app-shell {
+    width: 90%;
+    max-width: 1100px;
+    text-align: center;
+    padding-top: 30px; /* small gap like your example */
+}
+
+/* Header */
+.site-header {
+    margin-bottom: 12px;
+}
+
+.brand {
+    margin: 0;
+    font-size: 52px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: #4da6ff;
+    text-shadow: 0 0 16px rgba(77, 166, 255, 0.35);
+}
+
+/* Nav bar box */
+.navbar {
+    display: inline-flex;
+    gap: 12px;
+
+    padding: 10px 14px;
+    border: 1px solid #3399ff;
+    border-radius: 10px;
+
+    background: rgba(26, 26, 26, 0.75);
+    box-shadow: 0 0 18px rgba(51, 153, 255, 0.18);
+
+    margin-bottom: 28px;
+}
+
+.navbar a {
+    text-decoration: none;
+    color: #4da6ff;
+    padding: 6px 12px;
+
+    border: 1px solid rgba(51, 153, 255, 0.55);
+    border-radius: 8px;
+
+    transition: 0.2s ease;
+}
+
+.navbar a:hover {
+    color: #66b3ff;
+    border-color: #66b3ff;
+    box-shadow: 0 0 10px rgba(102, 179, 255, 0.35);
+}
+
+/* Page content “panel” */
+.page-shell {
+    text-align: left;
+    border: 1px solid #3399ff;
+    border-radius: 12px;
+
+    background: rgba(26, 26, 26, 0.6);
+    box-shadow: 0 0 22px rgba(51, 153, 255, 0.12);
+
+    padding: 24px;
+}
+
+/* Page titles inside body */
+.page-shell h2 {
+    margin: 0 0 14px;
+    text-align: center;
+    font-size: 36px;
+    color: #66b3ff;
+}
+
+/* Forms */
+form {
+    background-color: #121212;
+    padding: 18px;
+    margin: 18px auto;
+    border-radius: 12px;
+    border: 1px solid rgba(51, 153, 255, 0.7);
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    background-color: #0f0f0f;
+    color: #4da6ff;
+    border: 1px solid #3399ff;
+    border-radius: 8px;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #66b3ff;
+    box-shadow: 0 0 10px rgba(102, 179, 255, 0.35);
+}
+
+button {
+    padding: 10px 16px;
+    background-color: #3399ff;
+    color: #0f0f0f;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+button:hover {
+    background-color: #66b3ff;
+    transform: scale(1.03);
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 18px;
+}
+
+th, td {
+    border: 1px solid rgba(51, 153, 255, 0.6);
+    padding: 10px;
+}
+
+th {
+    background-color: rgba(31, 31, 31, 0.9);
+    color: #66b3ff;
+}
+
+tr:nth-child(even) {
+    background-color: rgba(24, 24, 24, 0.75);
+}
