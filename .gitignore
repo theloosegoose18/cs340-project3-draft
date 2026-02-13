@@ -1,0 +1,15 @@
+# dependencies / builds
+node_modules/
+dist/
+
+# logs / runtime
+.forever/
+*.log
+
+# OS / editor junk
+.DS_Store
+.idea/
+.vscode/
+
+# secrets
+.env

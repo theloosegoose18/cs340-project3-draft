@@ -1,0 +1,28 @@
+{
+  "name": "project_3",
+  "version": "1.0.0",
+  "description": "CS340 Project 3 Draft",
+  "main": "server.js",
+  "scripts": {
+	"development": "nodemon server.js",
+	"production": "npx forever start server.js",
+    "stop_production": "npx forever stop server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theloosegoose18/cs340-project3-draf.git"
+  },
+  "author": "Justin Barreras and Zack Sherman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/theloosegoose18/cs340-project3-draf/issues"
+  },
+  "homepage": "https://github.com/theloosegoose18/cs340-project3-draf#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "forever": "^4.0.3",
+    "mysql2": "^3.17.1",
+    "nodemon": "^3.1.11"
+  }
+}
