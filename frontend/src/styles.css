@@ -1,0 +1,250 @@
+/* =========================
+   ROOT COLORS (Noir Theme)
+   ========================= */
+:root {
+    --bg: #050608;
+    --panel: #0b0e12;
+    --panel-soft: #0f141b;
+    --text: #d6e9ff;
+    --muted: #8fc5ff;
+    --accent: #2b9dff;
+    --accent-glow: #66b8ff;
+    --border: rgba(43, 157, 255, 0.6);
+    --shadow: rgba(0, 0, 0, 0.8);
+}
+
+/* =========================
+   GLOBAL
+   ========================= */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Trebuchet MS", system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at 20% 10%, rgba(43,157,255,.08), transparent 40%),
+    radial-gradient(circle at 80% 20%, rgba(43,157,255,.06), transparent 45%),
+    var(--bg);
+    color: var(--text);
+}
+
+/* =========================
+   HEADER
+   ========================= */
+header {
+    text-align: center;
+    padding: 30px 16px 10px;
+}
+
+.site-title {
+    margin: 0;
+    font-size: 56px;
+    letter-spacing: 2px;
+    color: var(--accent-glow);
+    text-shadow: 0 8px 30px var(--shadow);
+}
+
+/* =========================
+   NAV BAR (matches your screenshot)
+   ========================= */
+.navbar {
+    margin: 20px auto 0;
+    padding: 16px 18px;
+    width: fit-content;
+    max-width: min(1100px, calc(100% - 40px));
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+
+    border: 1px solid rgba(43, 157, 255, 0.6);
+    border-radius: 14px;
+
+    background: rgba(0, 0, 0, 0.25);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+.navbar a {
+    text-decoration: none;
+    color: rgba(143, 197, 255, 1);
+
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid rgba(43, 157, 255, 0.65);
+
+    background: rgba(0, 0, 0, 0.35);
+    transition: 0.15s ease;
+}
+
+.navbar a:hover {
+    color: #ffffff;
+    border-color: rgba(102, 184, 255, 0.95);
+    background: rgba(43, 157, 255, 0.10);
+}
+
+/* Add class="active" to the current page link */
+.navbar a.active {
+    color: #fff;
+    border-color: rgba(102, 184, 255, 0.95);
+    background: rgba(43, 157, 255, 0.12);
+    box-shadow: 0 0 0 2px rgba(43,157,255,.10) inset;
+}
+
+
+
+/* =========================
+   MAIN PANEL
+   ========================= */
+.main {
+    width: min(1100px, calc(100% - 40px));
+    margin: 30px auto 80px;
+    padding: 30px;
+
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: rgba(10, 14, 20, 0.85);
+    box-shadow: 0 25px 80px var(--shadow);
+}
+
+.page-title {
+    text-align: center;
+    font-size: 44px;
+    margin: 0 0 25px;
+    color: var(--accent-glow);
+}
+
+/* =========================
+   SECTION BLOCKS
+   ========================= */
+.section {
+    margin-bottom: 24px;
+    padding: 18px;
+    border-radius: 14px;
+    border: 1px solid rgba(43,157,255,.4);
+    background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.35));
+}
+
+.section h2 {
+    text-align: center;
+    margin-top: 0;
+    color: var(--accent-glow);
+    font-size: 24px;
+}
+
+/* =========================
+   TABLES
+   ========================= */
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+th, td {
+    padding: 10px 14px;
+    border: 1px solid rgba(43,157,255,.4);
+}
+
+th {
+    background: rgba(43,157,255,.12);
+    color: var(--accent-glow);
+    text-align: left;
+}
+
+tbody tr:nth-child(even) {
+    background: rgba(255,255,255,.03);
+}
+
+/* =========================
+   CRUD GRID
+   ========================= */
+.crud-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+}
+
+@media (min-width: 900px) {
+    .crud-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* =========================
+   CRUD CARD
+   ========================= */
+.card {
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(43,157,255,.4);
+    background: rgba(0,0,0,.35);
+}
+
+.card h3 {
+    margin-top: 0;
+    text-align: center;
+    color: var(--accent-glow);
+}
+
+/* =========================
+   FORM
+   ========================= */
+.form-row {
+    margin-bottom: 12px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: var(--muted);
+}
+
+input {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(43,157,255,.4);
+    background: rgba(0,0,0,.5);
+    color: var(--text);
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--accent-glow);
+    box-shadow: 0 0 0 2px rgba(43,157,255,.15);
+}
+
+/* =========================
+   BUTTONS
+   ========================= */
+button {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(43,157,255,.15);
+    color: white;
+    cursor: pointer;
+    transition: 0.15s ease;
+}
+
+button:hover {
+    border-color: var(--accent-glow);
+    background: rgba(43,157,255,.25);
+}
+
+/* =========================
+   SMALL TEXT
+   ========================= */
+.note {
+    font-size: 13px;
+    color: rgba(214,233,255,.75);
+}

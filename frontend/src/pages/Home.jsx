@@ -1,10 +1,24 @@
 export default function Home() {
     return (
-        <>
-            <h2>Home</h2>
-            <p>Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor. Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Iaculis massa nisl malesuada lacinia integer nunc posuere. Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos.</p>
+        <main className="main">
+            <h2 className="page-title">Home</h2>
 
-            <p>Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor. Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Iaculis massa nisl malesuada lacinia integer nunc posuere. Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos.</p>
-        </>
+            <section className="section">
+                <h2>Application Pages</h2>
+
+                <ul className="note" style={{ listStyle: "none", paddingLeft: 0, lineHeight: 1.8 }}>
+                    <li><strong>Products</strong> – Browse and manage trading card products.</li>
+                    <li><strong>Inventories</strong> – Manage inventory locations (store vs not).</li>
+                    <li><strong>Product Inventories</strong> – Manage quantities of products per inventory.</li>
+                    <li><strong>Customers</strong> – Manage customer info and loyalty points.</li>
+                    <li><strong>Orders</strong> – Browse and manage orders.</li>
+                    <li><strong>Order Products</strong> – Manage order line items (products in an order).</li>
+                </ul>
+
+                <p className="note">
+                    Each page includes sections for Browse (SELECT), Insert, Update, and Delete.
+                </p>
+            </section>
+        </main>
     );
 }
