@@ -8,29 +8,37 @@ export default function EntityPage({
                                        sampleRows,
                                        insertConfig,
                                        updateConfig,
-                                       deleteConfig,
+                                       rowKey,
+
+                                       onDeleteRow,
+                                       deleteButtonText,
+                                       confirmDeleteMessage,
                                    }) {
     return (
         <main className="main">
             <h2 className="page-title">{pageTitle}</h2>
 
-            {/* BROWSE */}
             <section className="section">
                 <h2>{browseTitle}</h2>
-                <DataTable columns={columns} rows={sampleRows} />
-                <p className="note">
-                    {pageTitle} Page sample records.
-                </p>
+
+                <DataTable
+                    columns={columns}
+                    rows={sampleRows}
+                    rowKey={rowKey}
+                    onDeleteRow={onDeleteRow}
+                    deleteButtonText={deleteButtonText}
+                    confirmDeleteMessage={confirmDeleteMessage}
+                />
+
+
+                <p className="note">{pageTitle} Page sample records.</p>
             </section>
 
-            {/* CRUD - separate sections, no "CRUD OPERATIONS" header */}
             <section className="section">
-                <h2>Actions</h2>
-
+                <h2>CRUD</h2>
                 <div className="crud-grid">
                     <Crud {...insertConfig} />
                     <Crud {...updateConfig} />
-                    <Crud {...deleteConfig} />
                 </div>
             </section>
         </main>
