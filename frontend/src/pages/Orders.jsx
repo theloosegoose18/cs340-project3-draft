@@ -97,7 +97,7 @@ export default function Orders() {
                         type: "number",
                         min: 0,
                         placeholder: "Enter updated points used",
-                    },,
+                    },
                 ],
             }}
             rowKey="orderID"

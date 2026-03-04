@@ -5,10 +5,15 @@ export default function EntityPage({
                                        pageTitle,
                                        browseTitle,
                                        columns,
-                                       sampleRows,
+
+                                       rows,
+                                       rowKey,
+
+                                       loading,
+                                       error,
+
                                        insertConfig,
                                        updateConfig,
-                                       rowKey,
 
                                        onDeleteRow,
                                        deleteButtonText,
@@ -21,24 +26,24 @@ export default function EntityPage({
             <section className="section">
                 <h2>{browseTitle}</h2>
 
+                {error && <p className="note">Error: {error}</p>}
+                {loading && <p className="note">Loading...</p>}
+
                 <DataTable
                     columns={columns}
-                    rows={sampleRows}
+                    rows={rows ?? []}
                     rowKey={rowKey}
                     onDeleteRow={onDeleteRow}
                     deleteButtonText={deleteButtonText}
                     confirmDeleteMessage={confirmDeleteMessage}
                 />
-
-
-                <p className="note">{pageTitle} Page sample records.</p>
             </section>
 
             <section className="section">
                 <h2>CRUD</h2>
                 <div className="crud-grid">
-                    <Crud {...insertConfig} />
-                    <Crud {...updateConfig} />
+                    <Crud {...insertConfig} disabled={loading} />
+                    <Crud {...updateConfig} disabled={loading} />
                 </div>
             </section>
         </main>

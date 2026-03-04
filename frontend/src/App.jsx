@@ -8,9 +8,6 @@ import Orders from "./pages/Orders";
 import ProductInventories from "./pages/ProductInventories";
 import Products from "./pages/Products";
 
-
-const backendURL = "http://classwork.engr.oregonstate.edu:2011";
-
 function App() {
     return (
         <div className="app-shell">
@@ -23,30 +20,12 @@ function App() {
             <main className="page-shell">
                 <Routes>
                     <Route path="/" element={<Home />} />
-                    <Route
-                        path="/customers"
-                        element={<Customers backendURL={backendURL} />}
-                    />
-                    <Route
-                        path="/inventories"
-                        element={<Inventories backendURL={backendURL} />}
-                    />
-                    <Route
-                        path="/order-products"
-                        element={<OrderProducts backendURL={backendURL} />}
-                    />
-                    <Route
-                        path="/orders"
-                        element={<Orders backendURL={backendURL} />}
-                    />
-                    <Route
-                        path="/product-inventories"
-                        element={<ProductInventories backendURL={backendURL} />}
-                    />
-                    <Route
-                        path="/products"
-                        element={<Products backendURL={backendURL} />}
-                    />
+                    <Route path="/customers" element={<Customers />} />
+                    <Route path="/inventories" element={<Inventories />} />
+                    <Route path="/order-products" element={<OrderProducts />} />
+                    <Route path="/orders" element={<Orders />} />
+                    <Route path="/product-inventories" element={<ProductInventories />} />
+                    <Route path="/products" element={<Products />} />
                 </Routes>
             </main>
         </div>
