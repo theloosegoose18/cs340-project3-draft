@@ -65,7 +65,7 @@ export default function Customers() {
             pageTitle="Customers"
             browseTitle="Browse Customers"
             columns={[
-                { key: "customerID", label: "CustomerID" },
+                { key: "customerID", label: "Customer ID" },
                 { key: "fName", label: "First Name" },
                 { key: "lName", label: "Last Name" },
                 { key: "email", label: "Email" },

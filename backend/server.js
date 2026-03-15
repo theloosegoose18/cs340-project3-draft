@@ -1,4 +1,4 @@
-// server.js (REFACTORED DROP-IN)
+// server.js
 require("dotenv").config({ path: "local.env" });
 
 console.log("ENV CHECK:", {
@@ -144,7 +144,6 @@ app.get(
 );
 
 // -------------------- CUSTOMERS: CREATE / UPDATE / DELETE
-// Field names based on your DB output: customerID, fName, lName, email, phone, points, lastPurchase
 
 app.post(
     "/api/customers",
@@ -251,7 +250,14 @@ app.delete(
     })
 );
 
-// -------------------- ONE CUD: delete a product (keep your original)
+
+
+// -------------------- CUD: INSERT Product
+
+
+
+// -------------------- ONE CUD: delete a product
+
 app.delete(
     "/api/products/:id",
     asyncHandler(async (req, res) => {

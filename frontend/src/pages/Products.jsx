@@ -1,10 +1,61 @@
-import EntityPage from "../components/EntityPage";
+import { useEffect, useState} from "react";
+import EntityPage from "../components/EntityPage.jsx";
+import { apiFetch} from "../lib/api.js";
 
 export default function Products() {
 
-    const handleDeleteProduct = (row) => {
-        console.log("Delete product:", row.productID, row);
-        // later: await fetch(`/api/products/${row.productID}`, { method: "DELETE" })
+    const base = "/api/products";
+
+    const [rows, setRows] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    const load = async () => {
+        try {
+            setError("");
+            setLoading(true);
+            const data = await apiFetch(base);
+            setRows(data ?? []);
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const productOptions = [
+        {value: "", label: "-- Select a product --"},
+        ...rows.map((product) => ({
+            value: product.id,
+            label: `Product ${product.productID} - ${product.name}`,
+        })),
+    ];
+
+    useEffect(() => {
+        load();
+    }, []);
+
+    const handleInsert = async (values) => {
+        await apiFetch(base, {
+            method: "POST",
+            body: JSON.stringify(values),
+        });
+        await load();
+    };
+
+    const handleUpdate = async (values) => {
+        if (!values.productID) throw new Error("productID required");
+        await apiFetch(`${base}/${values.productID}`, {
+            method: "PUT",
+            body: JSON.stringify(values),
+        });
+        await load();
+    };
+
+    const handleDeleteProduct = async (row) => {
+        await apiFetch(`${base}/${row.productID}`, { method: "DELETE" });
+        setRows((prev) => prev.filter((product) => product.productID !== row.productID));
+        await load();
     };
 
     return (
@@ -12,70 +63,37 @@ export default function Products() {
             pageTitle="Products"
             browseTitle="Browse Products"
             columns={[
-                { key: "productID", label: "productID" },
-                { key: "name", label: "name" },
-                { key: "currentPrice", label: "currentPrice" },
+                { key: "productID", label: "Product ID" },
+                { key: "name", label: "Product Name" },
+                { key: "currentPrice", label: "Current Price" },
+
             ]}
-            sampleRows={[
-                {
-                    productID: 1,
-                    name: "Umbreon VMAX",
-                    currentPrice: "129.99" },
-                {
-                    productID: 2,
-                    name: "Charizard GX",
-                    currentPrice: "89.99" },
-            ]}
-            insertConfig={{
-                title: "Insert Product",
-                buttonText: "Insert Product",
-                fields: [
-                    {
-                        name: "name",
-                        label: "Name",
-                        placeholder: "Enter product name"
-                    },
-                    {
-                        name: "currentPrice",
-                        label: "Current Price",
-                        placeholder: "Initial price",
-                        type: "number",
-                        step: "0.01",
-                        min: "0"
-                    },
-                ],
-            }}
+           rows={rows}
+           rowKey="productID"
+           loading={loading}
+           error={error}
+           insertConfig={{
+               title: "Insert Product",
+               buttonText: "Submit",
+               onSubmit: handleInsert,
+               fields: [
+                   { name: "name", label: "Product Name" },
+                   { name: "currentPrice", label: "Current Price" },
+               ],
+           }}
             updateConfig={{
                 title: "Update Product",
-                buttonText: "Update Product",
+                buttonText: "Submit",
+                onSubmit: handleUpdate,
                 fields: [
-                    {
-                        name: "productID",
-                        label: "Product ID",
-                        placeholder: "Select productID to update",
-                        type: "number",
-                        min: "1"
-                    },
-                    {
-                        name: "name",
-                        label: "New Name",
-                        placeholder: "Change product name"
-                    },
-                    {
-                        name: "currentPrice",
-                        label: "New Price",
-                        placeholder: "Enter new price",
-                        type: "number",
-                        step: "0.01",
-                        min: "0"
-                    },
+                    { name: "productID", label: "Product ID" },
+                    { name: "name", label: "Product Name" },
+                    { name: "currentPrice", label: "Current Price" },
                 ],
             }}
-            rowKey="productID"
             onDeleteRow={handleDeleteProduct}
             deleteButtonText="Delete"
-            confirmDeleteMessage={(row) =>
-                `Delete product ${row.productID} (${row.name})?`
+            confirmButtonMessage={(row) => `Delete Product ${row.productID}?`
             }
         />
     );
