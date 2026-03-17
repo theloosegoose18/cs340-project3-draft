@@ -16,7 +16,7 @@ export async function apiFetch(url, options = {}) {
         throw new Error(msg);
     }
 
-    // ✅ Auto-unwrap { ok:true, data: ... }
+    // Auto-unwrap { ok:true, data: ... }
     if (payload && typeof payload === "object" && "ok" in payload && "data" in payload) {
         return payload.data;
     }

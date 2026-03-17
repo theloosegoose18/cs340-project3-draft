@@ -1,99 +1,79 @@
-import { useEffect, useState} from "react";
-import EntityPage from "../components/EntityPage.jsx";
-import { apiFetch} from "../lib/api.js";
+/*
+* ------------ Products Page ------------
+* Handles browse, insert, partial update, and delete for the Products table.
+* State and CRUD handlers are provided by the useCrud hook.
+* Delete is blocked by the DB (ON DELETE RESTRICT) if the product has order history.
+*
+* Sources:
+*   - React custom hooks:  https://react.dev/learn/reusing-logic-with-custom-hooks
+*   - FK RESTRICT behavior: https://dev.mysql.com/doc/refman/8.0/en/create-table-foreign-keys.html
+* */
+
+import EntityPage from "../components/EntityPage";
+import { useCrud } from "../hooks/useCrud";
 
 export default function Products() {
 
-    const base = "/api/products";
+    const { rows, loading, error, handleInsert, handleUpdate, handleDelete } =
+        useCrud("/api/products", "productID");
 
-    const [rows, setRows] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-
-    const load = async () => {
-        try {
-            setError("");
-            setLoading(true);
-            const data = await apiFetch(base);
-            setRows(data ?? []);
-        } catch (error) {
-            setError(error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
+    // Build dropdown options for the Update form selector
     const productOptions = [
-        {value: "", label: "-- Select a product --"},
-        ...rows.map((product) => ({
-            value: product.id,
-            label: `Product ${product.productID} - ${product.name}`,
+        { value: "", label: "-- Select a product --" },
+        ...rows.map((p) => ({
+            value: p.productID,
+            label: `${p.productID} — ${p.name} ($${p.currentPrice})`,
         })),
     ];
-
-    useEffect(() => {
-        load();
-    }, []);
-
-    const handleInsert = async (values) => {
-        await apiFetch(base, {
-            method: "POST",
-            body: JSON.stringify(values),
-        });
-        await load();
-    };
-
-    const handleUpdate = async (values) => {
-        if (!values.productID) throw new Error("productID required");
-        await apiFetch(`${base}/${values.productID}`, {
-            method: "PUT",
-            body: JSON.stringify(values),
-        });
-        await load();
-    };
-
-    const handleDeleteProduct = async (row) => {
-        await apiFetch(`${base}/${row.productID}`, { method: "DELETE" });
-        setRows((prev) => prev.filter((product) => product.productID !== row.productID));
-        await load();
-    };
 
     return (
         <EntityPage
             pageTitle="Products"
             browseTitle="Browse Products"
             columns={[
-                { key: "productID", label: "Product ID" },
-                { key: "name", label: "Product Name" },
+                { key: "productID",    label: "Product ID" },
+                { key: "name",         label: "Product Name" },
                 { key: "currentPrice", label: "Current Price" },
-
             ]}
-           rows={rows}
-           rowKey="productID"
-           loading={loading}
-           error={error}
-           insertConfig={{
-               title: "Insert Product",
-               buttonText: "Submit",
-               onSubmit: handleInsert,
-               fields: [
-                   { name: "name", label: "Product Name" },
-                   { name: "currentPrice", label: "Current Price" },
-               ],
-           }}
+            rows={rows}
+            rowKey="productID"
+            loading={loading}
+            error={error}
+            insertConfig={{
+                title: "Insert Product",
+                buttonText: "Submit",
+                onSubmit: handleInsert,
+                fields: [
+                    { name: "name",         label: "Product Name" },
+                    { name: "currentPrice", label: "Current Price", type: "number", step: "0.01", min: "0.01" },
+                ],
+            }}
             updateConfig={{
                 title: "Update Product",
                 buttonText: "Submit",
                 onSubmit: handleUpdate,
                 fields: [
-                    { name: "productID", label: "Product ID" },
-                    { name: "name", label: "Product Name" },
-                    { name: "currentPrice", label: "Current Price" },
+                    { name: "productID",    label: "Product",       type: "select", options: productOptions, parse: (v) => Number(v) },
+                    { name: "name",         label: "Product Name" },
+                    { name: "currentPrice", label: "Current Price", type: "number", step: "0.01", min: "0.01" },
                 ],
             }}
-            onDeleteRow={handleDeleteProduct}
+            onDeleteRow={handleDelete}
             deleteButtonText="Delete"
-            confirmButtonMessage={(row) => `Delete Product ${row.productID}?`
+            // Citation for the following prop:
+            // Date: 03/16/2026
+            // Adapted from delete confirmation debugging with AI assistance.
+            // The dialog was not appearing on Products despite identical code
+            // on Customers. Root cause was an incorrect prop name being passed
+            // to the DataTable component, which skipped the window.confirm() call.
+            // AI Tool Used: Claude (Anthropic)
+            // Prompt Summary: "I have a confirm delete message working on my
+            // Customers page but the same pattern on my Products page just deletes
+            // immediately without showing the dialog. Both pages look identical to
+            // me — what would cause the confirmation to be skipped on one but not
+            // the other?"
+            confirmDeleteMessage={(row) =>
+                `Delete "${row.name}"? This cannot be undone. Products with existing order history cannot be deleted.`
             }
         />
     );

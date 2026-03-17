@@ -4,7 +4,7 @@
   "description": "CS340 Project 3 Draft",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon server.js",
+    "development": "nodemon server.js",
     "start": "node server.js",
     "production": "npx forever start server.js",
     "stop_production": "npx forever stop server.js"

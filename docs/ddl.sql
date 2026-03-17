@@ -57,10 +57,10 @@ CREATE TABLE ProductInventories (
     CONSTRAINT chk_productInventories_qty CHECK (quantity >= 0),
     CONSTRAINT fk_ProductInventories_product
         FOREIGN KEY (productID) REFERENCES Products(productID)
-        ON DELETE RESTRICT,
+        ON DELETE CASCADE,
     CONSTRAINT fk_ProductInventories_inventory
         FOREIGN KEY (inventoryID) REFERENCES Inventories(inventoryID)
-        ON DELETE RESTRICT,
+        ON DELETE CASCADE,
     CONSTRAINT uq_ProductInventories_pair UNIQUE (productID, inventoryID)
 );
 
@@ -71,7 +71,7 @@ CREATE TABLE Customers (
     email VARCHAR(255) NOT NULL UNIQUE,
     phone VARCHAR(15),
     points INT NOT NULL DEFAULT 0,
-    lastPurchase DATETIME DEFAULT CURRENT_TIMESTAMP,
+    lastPurchase DATETIME DEFAULT NULL,
     PRIMARY KEY (customerID),
     CONSTRAINT chk_customers_points CHECK (points >= 0)
 );
@@ -95,17 +95,18 @@ CREATE TABLE OrderProducts (
     productID INT NOT NULL,
     quantity INT NOT NULL,
     inventoryID INT NOT NULL,
+    priceAtSale DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     PRIMARY KEY (orderItemID),
     CONSTRAINT chk_orderProducts_qty CHECK (quantity > 0),
     CONSTRAINT fk_OrderProducts_order
         FOREIGN KEY (orderID) REFERENCES Orders(orderID)
-        ON DELETE CASCADE,
+        ON DELETE CASCADE,          -- deleting an order removes its line items (correct)
     CONSTRAINT fk_OrderProducts_product
         FOREIGN KEY (productID) REFERENCES Products(productID)
-        ON DELETE RESTRICT,
+        ON DELETE RESTRICT,         -- block product deletion if sales history exists
     CONSTRAINT fk_OrderProducts_inventory
         FOREIGN KEY (inventoryID) REFERENCES Inventories(inventoryID)
-        ON DELETE RESTRICT
+        ON DELETE RESTRICT          -- block inventory deletion if sales history references it
 );
 
 -- ==========================
@@ -147,7 +148,7 @@ VALUES
     ((SELECT customerID FROM Customers WHERE email = 'hizzy@me.net'), 200),
     ((SELECT customerID FROM Customers WHERE email = 'ninjawarrior@super.gove'), 3000);
 
-INSERT INTO OrderProducts (orderID, productID, quantity, inventoryID)
+INSERT INTO OrderProducts (orderID, productID, quantity, inventoryID, priceAtSale)
 VALUES
     (
         (SELECT o.orderID
@@ -158,7 +159,8 @@ VALUES
          LIMIT 1),
         (SELECT productID FROM Products WHERE name = 'Fog'),
         13,
-        (SELECT inventoryID FROM Inventories WHERE name = 'Store Room')
+        (SELECT inventoryID FROM Inventories WHERE name = 'Store Room'),
+        (SELECT currentPrice FROM Products WHERE name = 'Fog')
     ),
     (
         (SELECT o.orderID
@@ -169,7 +171,8 @@ VALUES
          LIMIT 1),
         (SELECT productID FROM Products WHERE name = 'Raging Goblin'),
         1,
-        (SELECT inventoryID FROM Inventories WHERE name = 'Display')
+        (SELECT inventoryID FROM Inventories WHERE name = 'Display'),
+        (SELECT currentPrice FROM Products WHERE name = 'Raging Goblin')
     ),
     (
         (SELECT o.orderID
@@ -180,8 +183,15 @@ VALUES
          LIMIT 1),
         (SELECT productID FROM Products WHERE name = 'Fossil Booster Box'),
         2,
-        (SELECT inventoryID FROM Inventories WHERE name = 'Store Room')
+        (SELECT inventoryID FROM Inventories WHERE name = 'Store Room'),
+        (SELECT currentPrice FROM Products WHERE name = 'Fossil Booster Box')
     );
+
+-- Override lastPurchase with historical dates after triggers have fired.
+-- Monica has no seed orders so her lastPurchase stays NULL.
+UPDATE Customers SET lastPurchase = '2025-08-12 14:22:00' WHERE email = 'hpaul@email.com';
+UPDATE Customers SET lastPurchase = '2025-11-05 10:45:00' WHERE email = 'hizzy@me.net';
+UPDATE Customers SET lastPurchase = '2026-01-18 16:30:00' WHERE email = 'ninjawarrior@super.gove';
 
 -- ==========================
 -- Views (SELECT for all entities)
@@ -228,13 +238,11 @@ BEGIN
     SET FOREIGN_KEY_CHECKS = 1;
 END //
 
--- 2) RESET BACK TO SEEDED SAMPLE DATA
--- (This empties all tables and re-inserts the same sample rows as above.)
 CREATE PROCEDURE sp_reset_seeded()
 BEGIN
     CALL sp_reset_empty();
 
-    -- Re-seed sample data
+    -- Products: IDs 1=Raging Goblin, 2=Fossil Booster Box, 3=Rhystic Study, 4=Fog, 5=playmat
     INSERT INTO Products (name, currentPrice)
     VALUES
         ('Raging Goblin', 2.99),
@@ -243,6 +251,7 @@ BEGIN
         ('Fog', 0.23),
         ('WOTC branded playmat', 17.40);
 
+    -- Inventories: IDs 1=Display, 2=Store Room, 3=On Order
     INSERT INTO Inventories (name, atStore)
     VALUES
         ('Display', TRUE),
@@ -251,60 +260,40 @@ BEGIN
 
     INSERT INTO ProductInventories (productID, inventoryID, quantity)
     VALUES
-        ((SELECT productID FROM Products WHERE name = 'Raging Goblin'), (SELECT inventoryID FROM Inventories WHERE name = 'Display'), 16),
-        ((SELECT productID FROM Products WHERE name = 'Fossil Booster Box'), (SELECT inventoryID FROM Inventories WHERE name = 'Store Room'), 3),
-        ((SELECT productID FROM Products WHERE name = 'Fog'), (SELECT inventoryID FROM Inventories WHERE name = 'Store Room'), 362),
-        ((SELECT productID FROM Products WHERE name = 'Rhystic Study'), (SELECT inventoryID FROM Inventories WHERE name = 'On Order'), 5);
+        (1, 1, 16),   -- Raging Goblin    / Display
+        (2, 2, 3),    -- Fossil Booster   / Store Room
+        (4, 2, 362),  -- Fog              / Store Room
+        (3, 3, 5);    -- Rhystic Study    / On Order
 
+    -- Customers: IDs 1=Henry, 2=Jason, 3=Monica, 4=Makoto
     INSERT INTO Customers (fName, lName, email, phone, points)
     VALUES
-        ('Henry', 'Paul', 'hpaul@email.com', NULL, 2000),
-        ('Jason', 'Isaacs', 'hizzy@me.net', '555-343-5288', 200),
-        ('Monica', 'Isfran', 'spamfolder@yahoo.com', '5554876952', 0),
-        ('Makoto', 'Nagano', 'ninjawarrior@super.gove', NULL, 3000);
+        ('Henry',  'Paul',    'hpaul@email.com',         NULL,         2000),
+        ('Jason',  'Isaacs',  'hizzy@me.net',            '555-343-5288', 200),
+        ('Monica', 'Isfran',  'spamfolder@yahoo.com',    '5554876952',    0),
+        ('Makoto', 'Nagano',  'ninjawarrior@super.gove', NULL,         3000);
 
+    -- Orders: literal customerIDs — avoids Customers table conflict with tr_orders_after_insert
+    -- IDs 1=Henry, 2=Makoto, 3=Jason, 4=Monica
     INSERT INTO Orders (customerID, pointsUsed)
     VALUES
-        ((SELECT customerID FROM Customers WHERE email = 'hpaul@email.com'), 1600),
-        ((SELECT customerID FROM Customers WHERE fName = 'Makoto' AND lName = 'Nagano'), 0),
-        ((SELECT customerID FROM Customers WHERE email = 'hizzy@me.net'), 200),
-        ((SELECT customerID FROM Customers WHERE email = 'ninjawarrior@super.gove'), 3000);
+        (1, 1600),  -- Henry Paul
+        (4, 0),     -- Makoto Nagano
+        (2, 200),   -- Jason Isaacs
+        (3, 3000);  -- Monica Isfran
 
-    INSERT INTO OrderProducts (orderID, productID, quantity, inventoryID)
+    -- OrderProducts: literal IDs — avoids subquery conflicts with triggers
+    INSERT INTO OrderProducts (orderID, productID, quantity, inventoryID, priceAtSale)
     VALUES
-        (
-            (SELECT o.orderID
-             FROM Orders o
-             JOIN Customers c ON o.customerID = c.customerID
-             WHERE c.email = 'hizzy@me.net'
-             ORDER BY o.orderID DESC
-             LIMIT 1),
-            (SELECT productID FROM Products WHERE name = 'Fog'),
-            13,
-            (SELECT inventoryID FROM Inventories WHERE name = 'Store Room')
-        ),
-        (
-            (SELECT o.orderID
-             FROM Orders o
-             JOIN Customers c ON o.customerID = c.customerID
-             WHERE c.email = 'hpaul@email.com'
-             ORDER BY o.orderID DESC
-             LIMIT 1),
-            (SELECT productID FROM Products WHERE name = 'Raging Goblin'),
-            1,
-            (SELECT inventoryID FROM Inventories WHERE name = 'Display')
-        ),
-        (
-            (SELECT o.orderID
-             FROM Orders o
-             JOIN Customers c ON o.customerID = c.customerID
-             WHERE c.email = 'ninjawarrior@super.gove'
-             ORDER BY o.orderID DESC
-             LIMIT 1),
-            (SELECT productID FROM Products WHERE name = 'Fossil Booster Box'),
-            2,
-            (SELECT inventoryID FROM Inventories WHERE name = 'Store Room')
-        );
+        (3, 4, 13, 2, 0.23),   -- Jason's order:  13x Fog from Store Room
+        (1, 1,  1, 1, 2.99),   -- Henry's order:   1x Raging Goblin from Display
+        (4, 2,  2, 2, 49.99);  -- Monica's order:  2x Fossil Booster Box from Store Room
+
+    -- Override lastPurchase with historical dates after triggers have fired.
+    -- Monica has no seed orders so her lastPurchase stays NULL.
+    UPDATE Customers SET lastPurchase = '2025-08-12 14:22:00' WHERE customerID = 1;
+    UPDATE Customers SET lastPurchase = '2025-11-05 10:45:00' WHERE customerID = 2;
+    UPDATE Customers SET lastPurchase = '2026-01-18 16:30:00' WHERE customerID = 4;
 END //
 
 DELIMITER ;

@@ -379,3 +379,116 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
+
+
+-- =========================
+-- TRIGGERS
+-- =========================
+-- Citation for the following triggers:
+-- Date: 03/16/2026
+-- Adapted from MySQL trigger documentation with AI assistance.
+-- Triggers were written but not firing after re-running the DDL because
+-- re-running DDL drops all tables (and their associated triggers). The pl.sql
+-- file must be re-run after every DDL execution to reinstall them.
+-- Use SHOW TRIGGERS; to confirm installation.
+-- Source URL: https://dev.mysql.com/doc/refman/8.0/en/create-trigger.html
+-- AI Tool Used: Claude (Anthropic)
+-- Prompt Summary: "I added triggers to my pl.sql to auto-decrement inventory
+-- when an order product is inserted, but inserting a new order product has no
+-- effect on the quantity in ProductInventories. I re-ran my DDL and the triggers
+-- still do not fire. How do I verify triggers are installed and what would
+-- cause them to be missing?"
+-- Trigger responsibilities:
+--   1. OrderProducts.priceAtSale    — captured from Products.currentPrice on sale
+--   2. ProductInventories.quantity  — decrements on sale, increments on cancellation
+--   3. Customers.points             — deducted when points are used on an order
+--   4. Customers.lastPurchase       — updated when an order is placed
+
+DROP TRIGGER IF EXISTS tr_orders_after_insert;
+DROP TRIGGER IF EXISTS tr_order_products_before_insert;
+DROP TRIGGER IF EXISTS tr_order_products_after_insert;
+DROP TRIGGER IF EXISTS tr_order_products_after_delete;
+DROP TRIGGER IF EXISTS tr_order_products_after_update;
+
+-- ── Orders: INSERT ─────────────────────────────────────────────────────────
+-- An order was placed → deduct any points the customer chose to redeem,
+-- and stamp their lastPurchase timestamp.
+DELIMITER //
+CREATE TRIGGER tr_orders_after_insert
+AFTER INSERT ON Orders
+FOR EACH ROW
+BEGIN
+    IF NEW.customerID IS NOT NULL THEN
+        UPDATE Customers
+        SET points       = GREATEST(0, points - NEW.pointsUsed),
+            lastPurchase = CURRENT_TIMESTAMP
+        WHERE customerID = NEW.customerID;
+    END IF;
+END //
+DELIMITER ;
+
+-- ── OrderProducts: BEFORE INSERT ───────────────────────────────────────────
+-- Capture the product's current price at the moment of sale so order history
+-- is never affected by future price changes.
+DELIMITER //
+CREATE TRIGGER tr_order_products_before_insert
+BEFORE INSERT ON OrderProducts
+FOR EACH ROW
+BEGIN
+    SET NEW.priceAtSale = (
+        SELECT currentPrice
+        FROM Products
+        WHERE productID = NEW.productID
+    );
+END //
+DELIMITER ;
+
+-- ── OrderProducts: AFTER INSERT ────────────────────────────────────────────
+-- A sale was recorded → deduct from the inventory location that filled the order.
+DELIMITER //
+CREATE TRIGGER tr_order_products_after_insert
+AFTER INSERT ON OrderProducts
+FOR EACH ROW
+BEGIN
+    UPDATE ProductInventories
+    SET quantity = GREATEST(0, quantity - NEW.quantity)
+    WHERE productID = NEW.productID
+      AND inventoryID = NEW.inventoryID;
+END //
+DELIMITER ;
+
+-- ── OrderProducts: DELETE ──────────────────────────────────────────────────
+-- An order item was removed (cancellation / correction) → return stock.
+DELIMITER //
+CREATE TRIGGER tr_order_products_after_delete
+AFTER DELETE ON OrderProducts
+FOR EACH ROW
+BEGIN
+    UPDATE ProductInventories
+    SET quantity = quantity + OLD.quantity
+    WHERE productID = OLD.productID
+      AND inventoryID = OLD.inventoryID;
+END //
+DELIMITER ;
+
+-- ── OrderProducts: UPDATE ──────────────────────────────────────────────────
+-- Quantity, product, or inventory location changed on an existing order item.
+-- Strategy: restore the old allocation first, then apply the new one.
+DELIMITER //
+CREATE TRIGGER tr_order_products_after_update
+AFTER UPDATE ON OrderProducts
+FOR EACH ROW
+BEGIN
+    -- Step 1: restore the old quantity to the old location
+    UPDATE ProductInventories
+    SET quantity = quantity + OLD.quantity
+    WHERE productID = OLD.productID
+      AND inventoryID = OLD.inventoryID;
+
+    -- Step 2: deduct the new quantity from the new location
+    UPDATE ProductInventories
+    SET quantity = GREATEST(0, quantity - NEW.quantity)
+    WHERE productID = NEW.productID
+      AND inventoryID = NEW.inventoryID;
+END //
+DELIMITER ;
